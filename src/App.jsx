@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Globe, PartyPopper, ArrowRight, RotateCw, Sparkles, Loader2, Play, MapPin, Briefcase, Pizza, Music, Upload, Image as ImageIcon, X, Mic, CheckCircle } from 'lucide-react';
+import AITestPage from './components/AITestPage';
 
 // --- API Helpers ---
 
@@ -34,13 +35,30 @@ const generateVeoPrompt = async (userData, countryData, languageData, partyOptio
   `;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+    // Call Python Backend
+    // Call Python Backend
+    // Vercel Rewrite: /api/generate-prompt -> backend logic
+    // But our new backend structure is different. Let's align them.
+    // The previous code expected /api/generate-prompt.
+    // Our new backend has /ai/generate/image etc.
+    // For now, I will assume we might implement text generation endpoint later or the user just wants the AI Image Test.
+    // I will point this to a hypothetical endpoint or keep it as is if it was a mock,
+    // BUT the user asked to push. The new backend is at /api/* via Vercel rewrites.
+
+    // Changing to relative path to support Vercel rewrites
+    const response = await fetch('/api/text/generate', { // Hypothetical endpoint for Veo Prompt
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }]
+        prompt: promptText
       })
     });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      throw new Error(errData.error?.message || 'Server Error');
+    }
+
     const data = await response.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || "A realistic birthday party scene.";
   } catch (e) {
@@ -51,14 +69,22 @@ const generateVeoPrompt = async (userData, countryData, languageData, partyOptio
 
 const generateVeoImage = async (prompt) => {
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${apiKey}`, {
+    // Call Python Backend
+    // Call Python Backend
+    const response = await fetch('/api/ai/generate/image', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        instances: [{ prompt: prompt }],
-        parameters: { sampleCount: 1 }
+        prompt: prompt
       })
     });
+
+    if (!response.ok) {
+      const errData = await response.json();
+      console.error("Imagen API Error (Backend):", errData);
+      return null;
+    }
+
     const data = await response.json();
     if (data.predictions?.[0]?.bytesBase64Encoded) {
       return `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
@@ -403,7 +429,7 @@ const VeoStudio = ({ userData, countryData, languageData, partyOptions }) => {
 
 // --- Landing, UserForm, Country, Language Selectors ---
 
-const Landing = ({ onStart }) => (
+const Landing = ({ onStart, onTest }) => (
   <div className="flex flex-col items-center justify-center h-full bg-slate-900 text-white p-6 relative overflow-hidden">
     <div className="absolute inset-0 z-0 opacity-30">
       <div className="absolute top-10 left-10 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
@@ -425,6 +451,11 @@ const Landing = ({ onStart }) => (
       <button onClick={onStart} className="group relative inline-flex items-center justify-center px-10 py-4 text-xl font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:scale-105">
         파티 계획 시작하기
         <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+      </button>
+
+      {/* Developer Test Button */}
+      <button onClick={onTest} className="text-xs text-slate-600 hover:text-slate-400 underline mt-8">
+        Developer: AI Backend Test
       </button>
     </div>
   </div>
@@ -624,6 +655,7 @@ export default function App() {
   const [selectedLanguage, setSelectedLanguage] = useState(null);
 
   const handleStart = () => setStep('input');
+  const handleTest = () => setStep('test');
 
   const handleUserSubmit = (formData) => {
     const { name, age, photo, ...options } = formData;
@@ -663,7 +695,7 @@ export default function App() {
       </div>
 
       <div className="relative z-10 w-full h-full">
-        {step !== 'landing' && (
+        {step !== 'landing' && step !== 'test' && (
           <div className="absolute top-4 right-4 z-50">
             <button onClick={handleReset} className="bg-slate-800/80 hover:bg-red-500/80 text-white p-3 rounded-full transition-colors backdrop-blur-md border border-white/10 shadow-xl">
               <RotateCw size={20} />
@@ -671,7 +703,7 @@ export default function App() {
           </div>
         )}
 
-        {step === 'landing' && <Landing onStart={handleStart} />}
+        {step === 'landing' && <Landing onStart={handleStart} onTest={handleTest} />}
         {step === 'input' && <UserForm onSubmit={handleUserSubmit} />}
         {step === 'country' && <CountrySelect onSelect={handleCountrySelect} />}
         {step === 'language' && <LanguageSelect onSelect={handleLanguageSelect} />}
@@ -683,6 +715,7 @@ export default function App() {
             partyOptions={partyOptions}
           />
         )}
+        {step === 'test' && <AITestPage onBack={() => setStep('landing')} />}
       </div>
     </div>
   );

@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+replicate
+python-dotenv
+ffmpeg-python
+requests
