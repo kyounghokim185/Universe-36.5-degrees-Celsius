@@ -50,13 +50,29 @@ export default function App() {
   const handleTest = () => setStep('test');
 
   const handleUserSubmit = (formData) => {
-    const { name, age, photo, ...options } = formData;
+    const { name, age, photo } = formData;
     setUserData({ name, age, photo });
-    const locName = LOCATIONS.find(l => l.id === options.locationId)?.name || options.locationId;
-    setPartyOptions({ ...options, locationName: locName });
-    setStep('country');
+
+    // Set Defaults for Removed Steps
+    const defaultLocationId = 'home';
+    const locName = LOCATIONS.find(l => l.id === defaultLocationId)?.name || '아늑한 집';
+
+    setPartyOptions({
+      locationId: defaultLocationId,
+      locationName: locName,
+      occupation: '친구들',
+      food: '맛있는 파티 음식',
+      vibe: '행복한'
+    });
+
+    setSelectedCountry({ id: 'kr', name: '대한민국', flag: '🇰🇷' });
+    setSelectedLanguage({ id: 'ko', name: '한국어 (Korean)', hello: '안녕' });
+
+    // Direct to Studio
+    setStep('studio');
   };
 
+  // Steps removed, logic kept for safe deletions or future restore if needed.
   const handleCountrySelect = (country) => {
     setSelectedCountry(country);
     setStep('language');

@@ -4,6 +4,15 @@ import { Play } from 'lucide-react';
 
 export default function PortfolioSection() {
     const targetRef = useRef(null);
+    const [isDesktop, setIsDesktop] = React.useState(false);
+
+    React.useEffect(() => {
+        const checkDesktop = () => setIsDesktop(window.innerWidth >= 768);
+        checkDesktop();
+        window.addEventListener('resize', checkDesktop);
+        return () => window.removeEventListener('resize', checkDesktop);
+    }, []);
+
     const { scrollYProgress } = useScroll({
         target: targetRef,
     });
@@ -42,16 +51,22 @@ export default function PortfolioSection() {
     ];
 
     return (
-        <section ref={targetRef} className="h-[300vh] bg-stone-900 relative">
-            <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-                <div className="absolute top-10 left-10 md:left-20 z-10">
-                    <h2 className="text-4xl md:text-6xl font-serif text-white mb-4">당신의 마음이<br />닿는 순간</h2>
+        <section ref={targetRef} className={`bg-stone-900 relative ${isDesktop ? 'h-[300vh]' : 'h-auto py-20'}`}>
+            <div className={isDesktop ? "sticky top-0 flex h-screen items-center overflow-hidden" : "flex flex-col"}>
+
+                {/* Title Section */}
+                <div className={isDesktop ? "absolute top-10 left-10 md:left-20 z-10" : "px-6 mb-12 text-center"}>
+                    <h2 className="text-4xl md:text-6xl font-serif text-white mb-4">당신의 마음이<br className="hidden md:block" /> 닿는 순간</h2>
                     <p className="text-gray-400">스크롤하여 감동적인 사연들을 만나보세요.</p>
                 </div>
 
-                <motion.div style={{ x }} className="flex gap-8 pl-[40vw] md:pl-[30vw]">
+                {/* Cards Container */}
+                <motion.div
+                    style={isDesktop ? { x } : {}}
+                    className={isDesktop ? "flex gap-8 pl-[40vw] md:pl-[30vw]" : "flex flex-col gap-10 px-6"}
+                >
                     {cases.map((project) => (
-                        <div key={project.id} className="group relative w-[80vw] md:w-[600px] h-[60vh] md:h-[70vh] flex-shrink-0 overflow-hidden rounded-2xl bg-gray-800 border border-gray-700">
+                        <div key={project.id} className={`group relative flex-shrink-0 overflow-hidden rounded-2xl bg-gray-800 border border-gray-700 ${isDesktop ? 'w-[600px] h-[70vh]' : 'w-full aspect-[3/4]'}`}>
                             <img
                                 src={project.image}
                                 alt={project.title}
@@ -59,7 +74,7 @@ export default function PortfolioSection() {
                             />
 
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <button className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:scale-110 transition-transform">
+                                <button className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-lg">
                                     <Play className="w-10 h-10 text-white fill-white ml-2" />
                                 </button>
                             </div>

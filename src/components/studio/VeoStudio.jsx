@@ -139,7 +139,7 @@ export default function VeoStudio({ userData, countryData, languageData, partyOp
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen w-full bg-cream p-4 font-sans">
-            <div className="max-w-6xl w-full bg-white border border-stone-200 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[85vh]">
+            <div className="max-w-6xl w-full bg-white border border-stone-200 rounded-3xl overflow-hidden shadow-2xl flex flex-col h-[85dvh]">
 
                 {/* Header */}
                 <div className="p-5 border-b border-stone-100 flex justify-between items-center bg-stone-50/50">
@@ -159,7 +159,8 @@ export default function VeoStudio({ userData, countryData, languageData, partyOp
                 <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
 
                     {/* Left: Log Area (Warm Terminal) */}
-                    <div className="w-full md:w-1/3 bg-stone-50 p-6 border-r border-stone-100 overflow-y-auto font-mono text-xs md:text-sm">
+                    {/* Left: Log Area (Warm Terminal) - Limited height on mobile */}
+                    <div className="w-full md:w-1/3 bg-stone-50 p-6 border-r border-stone-100 overflow-y-auto font-mono text-xs md:text-sm max-h-[150px] md:max-h-full border-b md:border-b-0 border-stone-200">
                         <div className="text-stone-400 mb-4 uppercase tracking-wider font-bold text-xs flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-green-400"></div> System Log
                         </div>
@@ -199,7 +200,8 @@ export default function VeoStudio({ userData, countryData, languageData, partyOp
                     </div>
 
                     {/* Right: Interaction Area */}
-                    <div className="w-full md:w-2/3 relative bg-white flex flex-col items-center justify-center p-8 gap-6">
+                    {/* Right: Interaction Area - Scrollable on mobile */}
+                    <div className="w-full md:w-2/3 relative bg-white flex flex-col items-center p-4 md:p-8 gap-6 overflow-y-auto flex-1">
 
                         {/* Loading Stylized */}
                         {(status === 'prompting' || status === 'imagining') && (
@@ -247,7 +249,7 @@ export default function VeoStudio({ userData, countryData, languageData, partyOp
                                     <label className="block text-sm font-bold text-gray-700 mb-3 ml-1">
                                         ✨ 추가 요청사항 (선택)
                                     </label>
-                                    <div className="flex gap-4">
+                                    <div className="flex flex-col sm:flex-row gap-4">
                                         <input
                                             type="text"
                                             value={customRequest}

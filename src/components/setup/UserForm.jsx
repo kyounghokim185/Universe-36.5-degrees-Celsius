@@ -62,7 +62,7 @@ export default function UserForm({ onSubmit }) {
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-6">
-                        <h3 className="text-lg font-serif font-semibold text-orange-600 border-b border-orange-100 pb-2">1. 주인공 정보</h3>
+                        <h3 className="text-lg font-serif font-semibold text-orange-600 border-b border-orange-100 pb-2">필수 정보 입력</h3>
                         <div>
                             <label className="block text-sm font-bold text-gray-600 mb-1">이름 / 닉네임</label>
                             <input name="name" type="text" value={formData.name} onChange={handleChange} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg focus:ring-2 focus:ring-orange-200 focus:border-orange-400 outline-none transition-all placeholder-gray-400" placeholder="홍길동" required />
@@ -96,41 +96,15 @@ export default function UserForm({ onSubmit }) {
                         </div>
                     </div>
 
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-serif font-semibold text-amber-600 border-b border-amber-100 pb-2">2. 파티 옵션</h3>
-                        <div>
-                            <label className="block text-sm font-bold text-gray-600 mb-1 flex items-center gap-2"><Briefcase size={16} className="text-amber-500" /> 친구들 컨셉</label>
-                            <input name="occupation" type="text" value={formData.occupation} onChange={handleChange} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400 outline-none placeholder-gray-400" placeholder="예: 우주비행사, 락스타..." />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-bold text-gray-600 mb-1 flex items-center gap-2"><MapPin size={16} className="text-amber-500" /> 장소 선택</label>
-                            <select name="locationId" value={formData.locationId} onChange={handleChange} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400 outline-none cursor-pointer">
-                                {LOCATIONS.map(loc => (
-                                    <option key={loc.id} value={loc.id}>{loc.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-bold text-gray-600 mb-1 flex items-center gap-2"><Pizza size={16} className="text-amber-500" /> 메인 음식</label>
-                            <select name="food" value={formData.food} onChange={handleChange} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400 outline-none cursor-pointer">
-                                {FOODS.map(food => (
-                                    <option key={food} value={food}>{food}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-bold text-gray-600 mb-1 flex items-center gap-2"><Music size={16} className="text-amber-500" /> 분위기</label>
-                            <select name="vibe" value={formData.vibe} onChange={handleChange} className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-lg focus:ring-2 focus:ring-amber-200 focus:border-amber-400 outline-none cursor-pointer">
-                                {VIBES.map(vibe => (
-                                    <option key={vibe} value={vibe}>{vibe}</option>
-                                ))}
-                            </select>
-                        </div>
+                    {/* Removed Party Options Section per user request */}
+
+                    <div className="md:col-span-1 md:col-start-1 md:col-end-2 md:w-full pt-6">
+                        {/* Adjusted column span since we removed the second column */}
                     </div>
 
-                    <div className="md:col-span-2 pt-6">
+                    <div className="md:col-span-2 pt-2">
                         <button type="submit" className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-bold shadow-lg shadow-orange-200 hover:shadow-xl hover:scale-[1.01] transition-all text-lg flex items-center justify-center gap-2">
-                            다음 단계: 국가 선택 <ArrowRight size={20} />
+                            파티영상 만들기 <ArrowRight size={20} />
                         </button>
                     </div>
                 </form>
