@@ -3,10 +3,32 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowDown, Play } from 'lucide-react';
 import Gyro3DViewer from '../Gyro3DViewer';
 
-export default function HeroSection({ onStart }) {
+export default function HeroSection({ onStart, lang }) {
     const { scrollY } = useScroll();
     const y1 = useTransform(scrollY, [0, 500], [0, 200]);
     const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+    const str = {
+        ko: {
+            badge: 'AI Birthday Experience',
+            title1: '만약, 그날의 사진 속',
+            title2: '주인공과 눈을 맞춘다면?',
+            desc1: '당신의 스마트폰을 기울여보세요.',
+            desc2: '멈춰있는 추억에 숨결을 불어넣고, 다시 만나보세요.',
+            cta: '지금 무료로 체험하기',
+            more: '더 알아보기'
+        },
+        en: {
+            badge: 'AI Birthday Experience',
+            title1: 'What if you could meet',
+            title2: 'the memory face to face?',
+            desc1: 'Tilt your smartphone.',
+            desc2: 'Breathe life into frozen memories and meet them again.',
+            cta: 'Start Free Trial',
+            more: 'Learn More'
+        }
+    };
+    const t = str[lang] || str.ko;
 
     return (
         <section className="min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-cream relative overflow-hidden font-sans">
@@ -26,15 +48,15 @@ export default function HeroSection({ onStart }) {
                     className="flex-1 text-center md:text-left space-y-6"
                 >
                     <span className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-700 font-bold text-sm tracking-wide mb-2 shadow-sm border border-orange-200">
-                        AI Birthday Experience
+                        {t.badge}
                     </span>
                     <h1 className="text-4xl md:text-6xl font-serif font-bold text-gray-900 leading-tight">
-                        만약, 그날의 사진 속<br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600">주인공과 눈을 맞춘다면?</span>
+                        {t.title1}<br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600">{t.title2}</span>
                     </h1>
                     <p className="text-lg md:text-xl text-gray-600 font-medium leading-relaxed max-w-xl mx-auto md:mx-0">
-                        당신의 스마트폰을 기울여보세요.<br />
-                        멈춰있는 추억에 숨결을 불어넣고, 다시 만나보세요.
+                        {t.desc1}<br />
+                        {t.desc2}
                     </p>
 
                     <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
@@ -43,10 +65,10 @@ export default function HeroSection({ onStart }) {
                             className="px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl hover:shadow-2xl flex items-center justify-center gap-2"
                         >
                             <Play size={20} fill="currentColor" />
-                            지금 무료로 체험하기
+                            {t.cta}
                         </button>
                         <button className="px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-full font-bold text-lg hover:bg-gray-50 transition-colors shadow-md flex items-center justify-center gap-2">
-                            더 알아보기
+                            {t.more}
                         </button>
                     </div>
                 </motion.div>

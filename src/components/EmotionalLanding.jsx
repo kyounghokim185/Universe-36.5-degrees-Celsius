@@ -5,7 +5,7 @@ import MechanismSection from './landing/MechanismSection';
 import PortfolioSection from './landing/PortfolioSection';
 import BetaForm from './landing/BetaForm';
 
-export default function EmotionalLanding({ onStart, onTest }) {
+export default function EmotionalLanding({ onStart, onTest, onBetaSubmit, lang }) {
     // Simple scroll progress indicator could be added here if needed
 
     useEffect(() => {
@@ -15,12 +15,14 @@ export default function EmotionalLanding({ onStart, onTest }) {
 
     return (
         <div className="w-full min-h-screen bg-cream font-sans">
-            <HeroSection onStart={onStart} />
-            <ServiceSection />
-            <MechanismSection />
+            <HeroSection onStart={onStart} lang={lang} />
+            <ServiceSection lang={lang} />
+            <MechanismSection lang={lang} />
             {/* Portfolio Section uses horizontal scroll, needs careful layout */}
-            <PortfolioSection />
-            <BetaForm onStart={onStart} />
+            <PortfolioSection lang={lang} />
+            <div id="beta-form">
+                <BetaForm onStart={onBetaSubmit} lang={lang} />
+            </div>
 
             {/* Footer / Dev Link */}
             <div className="bg-gray-900 py-6 text-center border-t border-gray-800">

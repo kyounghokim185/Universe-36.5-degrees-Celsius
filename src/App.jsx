@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { RotateCw } from 'lucide-react';
 import AITestPage from './components/AITestPage';
 import EmotionalLanding from './components/EmotionalLanding';
-import UserForm from './components/setup/UserForm';
-import CountrySelect from './components/setup/CountrySelect';
-import LanguageSelect from './components/setup/LanguageSelect';
 import VeoStudio from './components/studio/VeoStudio';
 
 // --- Data Constants (Lifted up if needed, or kept in components) ---
