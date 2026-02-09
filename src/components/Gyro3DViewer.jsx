@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useSpring, useMotionValue, useTransform } from 'framer-motion';
-import { Smartphone, MousePointer2 } from 'lucide-react';
+import { Smartphone, MousePointer2, Maximize, Minimize } from 'lucide-react';
 
-const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
+const Gyro3DViewer = ({ imageUrl, videoUrl, backgroundImageUrl, foregroundImageUrl, alt = "3D View" }) => {
     const [permissionGranted, setPermissionGranted] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [isFullScreen, setIsFullScreen] = useState(false);
 
     // Motion values for rotation (Spring for smoothing)
     const rotateX = useSpring(0, { stiffness: 100, damping: 20 });
@@ -44,11 +45,6 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
         const percentX = x / (innerWidth / 2); // -1 to 1
         const percentY = y / (innerHeight / 2); // -1 to 1
 
-        // Reverse logic: Mouse left -> Image rotates left (showing right side of 3D object?)
-        // "Window effect": Mouse left -> Look left -> Image rotates Y positive?
-        // User requested: "Phone left -> Image right" (Window effect).
-        // Mouse logic: if I move mouse left, I want to look left.
-
         rotateY.set(percentX * 45); // Limit to 45 deg
         rotateX.set(-percentY * 45); // Inverted X for natural feel (Mouse up -> Look up -> Rotate X negative)
     };
@@ -62,19 +58,11 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
         if (beta === null || gamma === null) return;
 
         // Clamp/Limit values to ±45 degrees
-        // We constrain the natural tilt range we care about
-        const x = Math.min(Math.max(beta - 45, -45), 45); // Bias beta for holding phone at ~45deg
-        // Actually, usually beta is ~90 when holding upright? No, holding generic phone: ~45-60 deg?
-        // Let's assume 'center' is holding it somewhat upright.
-        // Simplifying: just take beta and gamma, clamp. 
-        // Ideally we'd calibrate "zero" on first load, but simpler to just clamp raw for now.
-
-        const constrainedBeta = Math.min(Math.max(beta - 60, -45), 45); // Centered around 60deg tilt
+        // Bias beta for holding phone at ~45deg
+        const constrainedBeta = Math.min(Math.max(beta - 60, -45), 45);
         const constrainedGamma = Math.min(Math.max(gamma, -45), 45);
 
         // Invert signal for "Window Effect"?
-        // Phone tilt Left (Gamma negative) -> View rotates to look Right? 
-        // User said: "Phone left -> Image right"
         rotateX.set(constrainedBeta);
         rotateY.set(constrainedGamma); // Test direction
     };
@@ -101,6 +89,11 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
         }
     };
 
+    const toggleFullScreen = (e) => {
+        e.stopPropagation(); // Prevent triggering other logic if nested
+        setIsFullScreen(!isFullScreen);
+    };
+
     useEffect(() => {
         if (permissionGranted && isMobile) {
             window.addEventListener('deviceorientation', handleOrientation);
@@ -114,31 +107,38 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
     }, [permissionGranted, isMobile]);
 
 
-    return (
-        <div className="relative w-full h-full flex items-center justify-center perspective-1000 overflow-hidden rounded-2xl">
+    // Determine container classes based on full screen state
+    const containerClasses = isFullScreen
+        ? "fixed inset-0 z-50 bg-black flex items-center justify-center p-4 transition-all duration-300"
+        : "relative w-full h-full flex items-center justify-center perspective-1000 overflow-hidden rounded-2xl transition-all duration-300";
 
-            {/* 3D Container */}
+    return (
+        <div className={containerClasses} onClick={(e) => isFullScreen && e.stopPropagation()}>
+
+            {/* Close/Minimize Button */}
+            <button
+                onClick={toggleFullScreen}
+                className="absolute top-4 right-4 z-[60] p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-colors shadow-lg group"
+                title={isFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
+            >
+                {isFullScreen ? <Minimize size={24} /> : <Maximize size={24} />}
+            </button>
+
+            {/* 3D Container - Inner */}
             <motion.div
                 style={{
                     rotateX,
                     rotateY,
                     transformStyle: "preserve-3d",
+                    scale: isFullScreen ? 1 : 1,
                 }}
-                className="relative w-full h-full flex items-center justify-center transition-transform duration-100 ease-linear rounded-2xl shadow-xl hover:shadow-2xl"
+                className={`relative flex items-center justify-center transition-transform duration-100 ease-linear shadow-xl hover:shadow-2xl ${isFullScreen ? 'w-full h-full max-w-4xl max-h-[80vh] aspect-[3/4]' : 'w-full h-full rounded-2xl'}`}
             >
-                {/* 3D Container - Inner */}
-                <div className="relative w-full h-full bg-black rounded-2xl overflow-hidden group">
+                <div className={`relative w-full h-full bg-black overflow-hidden group ${isFullScreen ? 'rounded-xl' : 'rounded-2xl'}`}>
 
                     {/* Background Layer (Moves MORE - distant) */}
                     <motion.div
                         style={{
-                            // Window analogy:
-                            // Move Mouse Left -> Look Left -> View rotates Y positive.
-                            // If looking Left, objects on the Right should come into view?
-                            // Simple parallax: Layers move at different speeds.
-                            // Background moves LESS than foreground? Or MORE?
-                            // User request: "Person moves a little, Background moves a lot for depth."
-                            // Background Scale: 1.2
                             x: useTransform(rotateY, [-45, 45], ['15%', '-15%']),
                             y: useTransform(rotateX, [-45, 45], ['15%', '-15%']),
                             scale: 1.2
@@ -148,7 +148,7 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
                         {videoUrl ? (
                             <video src={videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
                         ) : (
-                            <img src={backgroundImageUrl || "https://picsum.photos/800/600"} alt="Background" className="w-full h-full object-cover" />
+                            <img src={backgroundImageUrl || imageUrl || "https://picsum.photos/800/600"} alt="Background" className="w-full h-full object-cover" />
                         )}
                     </motion.div>
 
@@ -158,9 +158,9 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
                             style={{
                                 x: useTransform(rotateY, [-45, 45], ['5%', '-5%']),
                                 y: useTransform(rotateX, [-45, 45], ['5%', '-5%']),
-                                scale: 1.1, // Slightly larger than 1, but less than background
+                                scale: 1.1,
                             }}
-                            className="absolute inset-0 w-full h-full z-10" // z-index to be above background
+                            className="absolute inset-0 w-full h-full z-10"
                         >
                             <img src={foregroundImageUrl} alt="Foreground" className="w-full h-full object-contain" />
                         </motion.div>
@@ -202,7 +202,7 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
             )}
 
             {/* Desktop Hint */}
-            {!isMobile && (
+            {!isMobile && !isFullScreen && (
                 <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none opacity-50 text-white text-xs flex items-center justify-center gap-2 z-40">
                     <MousePointer2 size={12} /> Move mouse to look around
                 </div>
