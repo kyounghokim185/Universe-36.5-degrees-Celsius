@@ -63,12 +63,28 @@ export default function HeroSection({ onStart }) {
                         <div className="w-full h-full bg-gray-100 overflow-hidden relative">
                             {/* GYRO VIEWER INTEGRATION */}
                             <Gyro3DViewer
-                                imageUrl="https://picsum.photos/800/1000?grayscale" // Default Black & White
-                                videoUrl="https://cdn.pixabay.com/video/2024/02/05/199397-909923831_large.mp4" // Color/Video on activate?
-                            // Actually user requested: "Hover effect: photo transitions from black & white to color and shows a 'Play' icon on hover."
-                            // And "3D tilt"
-                            // My Gyro3DViewer handles tilt. 
-                            // Let's use it. Ideally we pass a high-res image.
+                                // Ideally we'd have a separate background and foreground
+                                // For now we can use the same image or a slightly different one to test effect
+                                // Let's use a nice old photo background and a clearer subject if possible
+                                // But since we are using picsum, we'll sim it.
+                                backgroundImageUrl="https://topics.images.site/image/v1/r/s/url/d3ebfa79-d59e-4b77-8025-5d930225d301" // Old room background
+                                foregroundImageUrl="https://picsum.photos/id/64/800/1000?grayscale" // Person (Transparent PNG ideally)
+                                // In reality, without a transparent PNG, the foreground will just block the background. 
+                                // User said: "If I input background and foreground (transparent png) separately..."
+                                // So I should set it up to accept them. 
+                                // Since I don't have a real transparent PNG handy url, I will just use the old logic for now or try to finding one.
+                                // Actually, let's just use the `imageUrl` prop I left for backward compat if they don't provide both?
+                                // No, I updated the code to use distinct props.
+                                // Let's use a sample transparent PNG for demo if possible, or just the main image as background.
+
+                                // Reverting to single image usage for now as default, but structure supports split.
+                                // To make it look good for the user immediately:
+                                // Let's use the single image as background (scaled up) and maybe a "frame" or overlay as foreground?
+                                // Actually, I'll pass the SAME image to BG, and nothing to FG for now, 
+                                // UNLESS I can find a good transparent portrait.
+
+                                // Let's use a specific demo set if available, otherwise just standard.
+                                imageUrl="https://picsum.photos/id/64/800/1200?grayscale"
                             />
 
                             {/* Overlay Texture (Old Photo) */}

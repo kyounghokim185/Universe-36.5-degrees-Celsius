@@ -126,14 +126,44 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
                 }}
                 className="relative w-full h-full flex items-center justify-center transition-transform duration-100 ease-linear rounded-2xl shadow-xl hover:shadow-2xl"
             >
-                {/* Placeholder / Content */}
+                {/* 3D Container - Inner */}
                 <div className="relative w-full h-full bg-black rounded-2xl overflow-hidden group">
 
-                    {/* Media Layer */}
-                    {videoUrl ? (
-                        <video src={videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover scale-110" />
-                    ) : (
-                        <img src={imageUrl || "https://picsum.photos/800/600"} alt={alt} className="w-full h-full object-cover scale-110" />
+                    {/* Background Layer (Moves MORE - distant) */}
+                    <motion.div
+                        style={{
+                            // Window analogy:
+                            // Move Mouse Left -> Look Left -> View rotates Y positive.
+                            // If looking Left, objects on the Right should come into view?
+                            // Simple parallax: Layers move at different speeds.
+                            // Background moves LESS than foreground? Or MORE?
+                            // User request: "Person moves a little, Background moves a lot for depth."
+                            // Background Scale: 1.2
+                            x: useTransform(rotateY, [-45, 45], ['15%', '-15%']),
+                            y: useTransform(rotateX, [-45, 45], ['15%', '-15%']),
+                            scale: 1.2
+                        }}
+                        className="absolute inset-0 w-full h-full"
+                    >
+                        {videoUrl ? (
+                            <video src={videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+                        ) : (
+                            <img src={backgroundImageUrl || "https://picsum.photos/800/600"} alt="Background" className="w-full h-full object-cover" />
+                        )}
+                    </motion.div>
+
+                    {/* Foreground Layer (Moves LESS - close) */}
+                    {foregroundImageUrl && (
+                        <motion.div
+                            style={{
+                                x: useTransform(rotateY, [-45, 45], ['5%', '-5%']),
+                                y: useTransform(rotateX, [-45, 45], ['5%', '-5%']),
+                                scale: 1.1, // Slightly larger than 1, but less than background
+                            }}
+                            className="absolute inset-0 w-full h-full z-10" // z-index to be above background
+                        >
+                            <img src={foregroundImageUrl} alt="Foreground" className="w-full h-full object-contain" />
+                        </motion.div>
                     )}
 
                     {/* Glare Effect Layer */}
@@ -144,11 +174,11 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
                             left: glareX,
                             top: glareY,
                         }}
-                        className="absolute w-[200%] h-[200%] pointer-events-none -translate-x-1/2 -translate-y-1/2 mix-blend-overlay"
+                        className="absolute w-[200%] h-[200%] pointer-events-none -translate-x-1/2 -translate-y-1/2 mix-blend-overlay z-20"
                     />
 
                     {/* Shadow / Depth enhancement */}
-                    <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.5)] pointer-events-none rounded-2xl"></div>
+                    <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.5)] pointer-events-none rounded-2xl z-30"></div>
                 </div>
             </motion.div>
 
@@ -173,7 +203,7 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, alt = "3D View" }) => {
 
             {/* Desktop Hint */}
             {!isMobile && (
-                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none opacity-50 text-white text-xs flex items-center justify-center gap-2">
+                <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none opacity-50 text-white text-xs flex items-center justify-center gap-2 z-40">
                     <MousePointer2 size={12} /> Move mouse to look around
                 </div>
             )}
