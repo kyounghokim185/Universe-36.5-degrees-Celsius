@@ -7,12 +7,15 @@
     ],
     "builds": [
         {
-            "src": "src/main.jsx",
-            "use": "@vercel/vite"
-        },
-        {
             "src": "backend/main.py",
             "use": "@vercel/python"
+        },
+        {
+            "src": "package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
         }
     ]
 }
