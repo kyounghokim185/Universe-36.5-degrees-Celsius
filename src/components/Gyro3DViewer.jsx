@@ -8,8 +8,13 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, backgroundImageUrl, foregroundImageU
     const [isFullScreen, setIsFullScreen] = useState(false);
 
     // Motion values for rotation (Spring for smoothing)
-    const rotateX = useSpring(0, { stiffness: 100, damping: 20 });
-    const rotateY = useSpring(0, { stiffness: 100, damping: 20 });
+    // Reduce movement range: The user wands 2x slower.
+    // Damping: Higher = less oscillation/smoother. Stiffness: Lower = slower response.
+    // Original: stiffness 100, damping 20.
+    // New: stiffness 50, damping 30? Or just map input range differently.
+    // Let's keep spring snappy but reduce the *output* displacement.
+    const rotateX = useSpring(0, { stiffness: 60, damping: 25 }); // Slightly softer spring
+    const rotateY = useSpring(0, { stiffness: 60, damping: 25 });
 
     // Glare effect opacity based on rotation
     const glareOpacity = useTransform(rotateY, [-45, 0, 45], [0.1, 0, 0.1]);
@@ -45,8 +50,10 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, backgroundImageUrl, foregroundImageU
         const percentX = x / (innerWidth / 2); // -1 to 1
         const percentY = y / (innerHeight / 2); // -1 to 1
 
-        rotateY.set(percentX * 45); // Limit to 45 deg
-        rotateX.set(-percentY * 45); // Inverted X for natural feel (Mouse up -> Look up -> Rotate X negative)
+        // Reduced sensitivity for mouse too? Maybe just keep it snappy for mouse. 
+        // But consistent behavior is good.
+        rotateY.set(percentX * 20); // Limit to 20 deg (was 45) -> "2x slower" effect visually
+        rotateX.set(-percentY * 20);
     };
 
     // Device Orientation Handler
@@ -57,14 +64,17 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, backgroundImageUrl, foregroundImageU
 
         if (beta === null || gamma === null) return;
 
-        // Clamp/Limit values to ±45 degrees
-        // Bias beta for holding phone at ~45deg
+        // "2x slower" -> Map larger physical tilt to smaller visual rotation OR just clamp/reduce scale.
+        // User said "Movement is too sensitive". 
+        // So for 45 deg tilt, maybe we only rotate 22.5 deg visually?
+        // Or we require 90 deg tilt to get full effect?
+
         const constrainedBeta = Math.min(Math.max(beta - 60, -45), 45);
         const constrainedGamma = Math.min(Math.max(gamma, -45), 45);
 
-        // Invert signal for "Window Effect"?
-        rotateX.set(constrainedBeta);
-        rotateY.set(constrainedGamma); // Test direction
+        // Apply reduction factor 0.5
+        rotateX.set(constrainedBeta * 0.5);
+        rotateY.set(constrainedGamma * 0.5);
     };
 
     const requestAccess = () => {
@@ -108,9 +118,44 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, backgroundImageUrl, foregroundImageU
 
 
     // Determine container classes based on full screen state
+    // For mobile 'separate page' feel: fixed inset-0 z-50 bg-black.
+    // 'Full Width of Cell Phone': On portrait, 16:9 image is small width-wise if 'contain', small height-wise if 'cover' (crops sides).
+    // User wants "Image fits the screen". 
+    // If we use `h-dvh` and `w-screen`, and `object-cover`, it fills the screen.
+    // But aspect ratio? user mentioned 16:9 for view, 24:13 for image.
+
     const containerClasses = isFullScreen
-        ? "fixed inset-0 z-50 bg-black flex items-center justify-center p-4 transition-all duration-300"
+        ? "fixed inset-0 z-[100] bg-black flex items-center justify-center transition-all duration-300"
         : "relative w-full h-full flex items-center justify-center perspective-1000 overflow-hidden rounded-2xl transition-all duration-300";
+
+    // Dynamic scale logic for ratio:
+    // Window: 16:9 (1.77)
+    // Image: 24:13 (1.85) -> Very similar.
+    // User wants "Edges hidden initially".
+    // Let's force a window aspect ratio of 16/9, and scale the content up.
+
+    // For Full Screen Mobile:
+    // If portrait, `aspect-video` makes it a small box. 
+    // Maybe force landscape rotation CSS or just let it fill 100% width?
+    // "One separate page so it fits the cell phone screen" -> implies filling the screen?
+    // If I fill the screen (portrait), a landscape image is cropped heavily or tiny.
+    // Let's assume user rotates phone OR wants it to fill width.
+    // But "Immersive" usually means filling the whole screen.
+    // Let's use `w-full h-full` for the window frame in full screen, but `max-w-7xl` etc.
+    // Actually, to simulate 16:9 window on full screen phone (likely 9:16), 
+    // we probably want a "Cinema Mode" black bars top/bottom.
+    // `aspect-video` on `w-full` does exactly that.
+
+    // BUT user said "Phone screen... partially visible... immersion drops". 
+    // This implies looking at a small box in the middle of a white/other page.
+    // Full screen overlay fixes this.
+
+    // "Image borders... 24:13... 16:9... gyro reveals rest"
+    // This implies masking.
+
+    // Logic: 
+    // Outer 'Window': Aspect Ratio 16/9 (or screen ratio in full screen?).
+    // Inner 'Content': Scale > 1 (e.g. 1.2 or 1.3 to simulated 24:13 coverage).
 
     return (
         <div className={containerClasses} onClick={(e) => isFullScreen && e.stopPropagation()}>
@@ -118,30 +163,59 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, backgroundImageUrl, foregroundImageU
             {/* Close/Minimize Button */}
             <button
                 onClick={toggleFullScreen}
-                className="absolute top-4 right-4 z-[60] p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-colors shadow-lg group"
+                className="absolute top-4 right-4 z-[110] p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/40 transition-colors shadow-lg group"
                 title={isFullScreen ? "Exit Full Screen" : "Enter Full Screen"}
             >
                 {isFullScreen ? <Minimize size={24} /> : <Maximize size={24} />}
             </button>
 
             {/* 3D Container - Inner */}
+            {/* Aspect Ratio Handling */}
+            {/* If FullScreen, we want to maximize size but keep aspect ratio 16:9 IF that is the "window". 
+                Or do we want the window to be the SCREEN?
+                User said "24:13 image... 16:9 view". 
+                If phone is 9:16, 16:9 view is tiny strip. 
+                Maybe "16:9 view" is for desktop/embedded. 
+                For mobile full screen, maybe just "Fill Screen"? 
+                Let's try: Mobile Full Screen -> Fill Screen (w-full h-full).
+                Desktop/Embedded -> Aspect Video (16:9).
+            */}
             <motion.div
                 style={{
                     rotateX,
                     rotateY,
                     transformStyle: "preserve-3d",
-                    scale: isFullScreen ? 1 : 1,
                 }}
-                className={`relative flex items-center justify-center transition-transform duration-100 ease-linear shadow-xl hover:shadow-2xl ${isFullScreen ? 'w-full h-full max-w-4xl max-h-[80vh] aspect-[3/4]' : 'w-full h-full rounded-2xl'}`}
+                className={`relative flex items-center justify-center transition-transform duration-100 ease-linear shadow-xl ${isFullScreen
+                        ? 'w-full h-full' // Full screen: fill viewport. 
+                        : 'w-full h-full rounded-2xl' // Embedded: fill parent
+                    }`}
             >
-                <div className={`relative w-full h-full bg-black overflow-hidden group ${isFullScreen ? 'rounded-xl' : 'rounded-2xl'}`}>
+                {/* The "Window" / Mask */}
+                {/* User wants 24:13 image (1.85) inside 16:9 (1.77) frame initially? 
+                   Actually 24:13 is WIDER. So if we fit height, sides are cut.
+                   If we fit width, top/bottom are cut (but 16:9 is taller than 24:13 relative to width).
+                   24/13 = 1.846. 16/9 = 1.777. 
+                   So 24:13 is wider. 
+                   If we show 16:9 crop, we lose sides. Gyro reveals sides. CORRECT.
+                */}
+                <div className={`relative w-full h-full bg-black overflow-hidden group ${isFullScreen ? '' : 'rounded-2xl' /* No rounded corners in immersive full screen */
+                    }`}>
 
                     {/* Background Layer (Moves MORE - distant) */}
                     <motion.div
                         style={{
-                            x: useTransform(rotateY, [-45, 45], ['15%', '-15%']),
-                            y: useTransform(rotateX, [-45, 45], ['15%', '-15%']),
-                            scale: 1.2
+                            // Reduce movement range to match slowed sensitivity? 
+                            // Or keep it to maximize "reveal"?
+                            // If sensitivity is low, we need large movement range to see edges? 
+                            // No, sensitivity low = hard to reach edges.
+                            // User wants "Slower". 
+                            // Disconnect "Sensitivity" (jitter/speed) from "Range" (max reveal).
+                            // I reduced input sensitivity. 
+                            // Let's keep output range reasonable.
+                            x: useTransform(rotateY, [-45, 45], ['10%', '-10%']), // Was 15%. Reduced slightly.
+                            y: useTransform(rotateX, [-45, 45], ['10%', '-10%']),
+                            scale: 1.3 // Increased scale to ensure coverage (simulating 24:13 > 16:9 overscan)
                         }}
                         className="absolute inset-0 w-full h-full"
                     >
@@ -158,7 +232,7 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, backgroundImageUrl, foregroundImageU
                             style={{
                                 x: useTransform(rotateY, [-45, 45], ['5%', '-5%']),
                                 y: useTransform(rotateX, [-45, 45], ['5%', '-5%']),
-                                scale: 1.1,
+                                scale: 1.15,
                             }}
                             className="absolute inset-0 w-full h-full z-10"
                         >
@@ -178,13 +252,13 @@ const Gyro3DViewer = ({ imageUrl, videoUrl, backgroundImageUrl, foregroundImageU
                     />
 
                     {/* Shadow / Depth enhancement */}
-                    <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.5)] pointer-events-none rounded-2xl z-30"></div>
+                    <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.5)] pointer-events-none z-30"></div>
                 </div>
             </motion.div>
 
             {/* Permission Button for iOS */}
             {isMobile && !permissionGranted && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-6 text-center">
+                <div className="absolute inset-0 z-[120] flex items-center justify-center bg-black/80 backdrop-blur-sm p-6 text-center">
                     <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full">
                         <Smartphone className="w-12 h-12 text-orange-500 mx-auto mb-4 animate-pulse" />
                         <h3 className="text-xl font-bold text-gray-900 mb-2">몰입형 체험 시작하기</h3>
