@@ -67,7 +67,14 @@ export default function HeroSection({ onStart, lang }) {
                             <Play size={20} fill="currentColor" />
                             {t.cta}
                         </button>
-                        <button className="px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-full font-bold text-lg hover:bg-gray-50 transition-colors shadow-md flex items-center justify-center gap-2">
+                        <button
+                            onClick={() => {
+                                const serviceSection = document.getElementById('service-section'); // Need to ensure ID exists or just scroll down
+                                if (serviceSection) serviceSection.scrollIntoView({ behavior: 'smooth' });
+                                else window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+                            }}
+                            className="px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-full font-bold text-lg hover:bg-gray-50 transition-colors shadow-md flex items-center justify-center gap-2"
+                        >
                             {t.more}
                         </button>
                     </div>

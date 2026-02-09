@@ -4,119 +4,104 @@ import AITestPage from './components/AITestPage';
 import EmotionalLanding from './components/EmotionalLanding';
 import VeoStudio from './components/studio/VeoStudio';
 
-// --- Data Constants (Lifted up if needed, or kept in components) ---
-// LOCATIONS, COUNTRIES, LANGUAGES are now inside their respective components 
-// or could be in a shared constant file. 
-// For now, since they are used in App.jsx for logic (e.g. locationName lookup), 
-// we might need them or we can pass the whole object.
-// Let's see: UserForm passes { ...formData, photo }, App needs to find locationName.
-// CountrySelect passes country object. LanguageSelect passes language object.
-// So App.jsx doesn't strictly need the arrays if the components pass full objects or IDs.
-
-// However, UserForm only passes locationId. App needs to lookup locationName.
-// I will keep LOCATIONS here for lookup, or better, move logic to UserForm to pass locationName?
-// The original UserForm passed locationId, and App looked it up.
-// The NEW UserForm I wrote passes locationId too?
-// Let's check UserForm code I wrote.
-// "const locName = LOCATIONS.find..." is in App.jsx originally.
-// I should duplicate LOCATIONS here or export it. 
-// For safety/speed, I'll keep LOCATIONS array here for the lookup logic, 
-// even if it matches the one in UserForm. Ideally shared.
-
-const LOCATIONS = [
-  { id: 'home', name: '아늑한 집' },
-  { id: 'beach', name: '햇살 가득 해변' },
-  { id: 'club', name: '화려한 클럽' },
-  { id: 'restaurant', name: '고급 레스토랑' },
-  { id: 'rooftop', name: '도심 옥상 파티' },
-  { id: 'camping', name: '숲속 캠핑장' },
-  { id: 'amusement', name: '놀이공원' },
-  { id: 'space', name: '우주 정거장' },
-  { id: 'underwater', name: '수중 호텔' },
-  { id: 'school', name: '학교 교실' },
-];
-
 export default function App() {
   const [step, setStep] = useState('landing');
+  const [lang, setLang] = useState('ko'); // 'ko' or 'en'
   const [userData, setUserData] = useState({ name: '', age: '', photo: null });
   const [partyOptions, setPartyOptions] = useState({});
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState(null);
 
-  const handleStart = () => setStep('input');
-  const handleTest = () => setStep('test');
+  // Handle data from Beta Form directly
+  const handleBetaSubmit = (formData) => {
+    // Map Beta Form data to VeoStudio requirements
+    const { name, contact, target, message, photo } = formData;
 
-  const handleUserSubmit = (formData) => {
-    const { name, age, photo } = formData;
-    setUserData({ name, age, photo });
+    setUserData({
+      name: name || 'User',
+      age: 25, // Default or inferred
+      photo: photo || null
+    });
 
-    // Set Defaults for Removed Steps
+    // Default Party Options based on Beta Form context
     const defaultLocationId = 'home';
-    const locName = LOCATIONS.find(l => l.id === defaultLocationId)?.name || '아늑한 집';
+    const locName = lang === 'ko' ? '아늑한 집' : 'Cozy Home';
 
     setPartyOptions({
       locationId: defaultLocationId,
       locationName: locName,
-      occupation: '친구들',
-      food: '맛있는 파티 음식',
-      vibe: '행복한'
+      occupation: target || 'friend',
+      food: 'Party Food',
+      vibe: 'Happy',
+      customMessage: message // Pass the message for the prompt
     });
 
-    setSelectedCountry({ id: 'kr', name: '대한민국', flag: '🇰🇷' });
-    setSelectedLanguage({ id: 'ko', name: '한국어 (Korean)', hello: '안녕' });
+    // Set Country/Language based on current settings
+    setSelectedCountry(lang === 'ko' ? { id: 'kr', name: '대한민국', flag: '🇰🇷' } : { id: 'us', name: 'USA', flag: '🇺🇸' });
+    setSelectedLanguage(lang === 'ko' ? { id: 'ko', name: '한국어', hello: '안녕' } : { id: 'en', name: 'English', hello: 'Hello' });
 
-    // Direct to Studio
     setStep('studio');
   };
 
-  // Steps removed, logic kept for safe deletions or future restore if needed.
-  const handleCountrySelect = (country) => {
-    setSelectedCountry(country);
-    setStep('language');
-  };
-
-  const handleLanguageSelect = (lang) => {
-    setSelectedLanguage(lang);
-    setStep('studio');
-  };
+  const handleTest = () => setStep('test');
 
   const handleReset = () => {
-    if (window.confirm("처음으로 돌아가시겠습니까? 모든 설정이 초기화됩니다.")) {
+    if (window.confirm(lang === 'ko' ? "처음으로 돌아가시겠습니까?" : "Reset to start?")) {
       setStep('landing');
       setUserData({ name: '', age: '', photo: null });
       setPartyOptions({});
-      setSelectedCountry(null);
-      setSelectedLanguage(null);
       window.speechSynthesis.cancel();
     }
   };
 
+  const str = {
+    ko: { toggle: 'English' },
+    en: { toggle: '한국어' }
+  };
+
+  // Safe defaults for context if needed
+  const safeLang = str[lang] ? lang : 'ko';
+
   return (
-    <div className="w-full h-screen bg-cream font-sans overflow-hidden text-gray-900">
+    <div className="w-full h-screen bg-cream font-sans overflow-hidden text-gray-900 relative">
 
-      {/* Background Ambience (Optional for sub-pages since they have their own bg-cream, but keeping it subtle is nice) */}
-      {/* We can remove the dark global background now since we want warm beige. */}
-
-      <div className="relative z-10 w-full h-full overflow-auto">
+      {/* Language Toggle & Reset */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <button
+          onClick={() => setLang(lang === 'ko' ? 'en' : 'ko')}
+          className="bg-white/80 backdrop-blur text-gray-800 px-4 py-2 rounded-full font-bold text-xs border border-stone-200 shadow-md hover:bg-stone-50 transition-colors"
+        >
+          {str[safeLang].toggle}
+        </button>
 
         {step !== 'landing' && step !== 'test' && (
-          <div className="fixed top-4 right-4 z-50">
-            <button onClick={handleReset} className="bg-white hover:bg-red-50 text-gray-600 hover:text-red-500 p-3 rounded-full transition-colors border border-stone-200 shadow-lg">
-              <RotateCw size={20} />
-            </button>
-          </div>
+          <button onClick={handleReset} className="bg-white hover:bg-red-50 text-gray-600 hover:text-red-500 p-2 rounded-full transition-colors border border-stone-200 shadow-md">
+            <RotateCw size={20} />
+          </button>
+        )}
+      </div>
+
+      <div className="relative z-10 w-full h-full overflow-auto">
+        {step === 'landing' && (
+          <EmotionalLanding
+            onStart={() => {
+              // Scroll to beta form
+              const betaSection = document.getElementById('beta-form');
+              if (betaSection) betaSection.scrollIntoView({ behavior: 'smooth' });
+            }}
+            onTest={handleTest}
+            onBetaSubmit={handleBetaSubmit}
+            lang={lang}
+          />
         )}
 
-        {step === 'landing' && <EmotionalLanding onStart={handleStart} onTest={handleTest} />}
-        {step === 'input' && <UserForm onSubmit={handleUserSubmit} />}
-        {step === 'country' && <CountrySelect onSelect={handleCountrySelect} />}
-        {step === 'language' && <LanguageSelect onSelect={handleLanguageSelect} />}
         {step === 'studio' && (
           <VeoStudio
             userData={userData}
             countryData={selectedCountry}
             languageData={selectedLanguage}
             partyOptions={partyOptions}
+            lang={lang}
           />
         )}
         {step === 'test' && <AITestPage onBack={() => setStep('landing')} />}

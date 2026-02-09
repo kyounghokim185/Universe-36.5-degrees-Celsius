@@ -202,8 +202,8 @@ export default function VeoStudio({ userData, countryData, languageData, partyOp
                         <span className="text-orange-600 font-serif">Veo 3 Studio</span>
                     </div>
                     <div className="flex items-center gap-4 text-xs text-stone-500 font-medium hidden md:flex uppercase tracking-wide">
-                        <span className="py-1 px-3 bg-stone-100 rounded-full">LOC: {partyOptions.locationName}</span>
-                        <span className="py-1 px-3 bg-stone-100 rounded-full">LANG: {languageData.name}</span>
+                        <span className="py-1 px-3 bg-stone-100 rounded-full">LOC: {partyOptions?.locationName}</span>
+                        <span className="py-1 px-3 bg-stone-100 rounded-full">LANG: {languageData?.name || lang}</span>
                     </div>
                 </div>
 
