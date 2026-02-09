@@ -196,8 +196,9 @@ export default function VeoStudio({ userData, countryData, languageData, partyOp
                 {/* Header */}
                 <div className="p-5 border-b border-stone-100 flex justify-between items-center bg-stone-50/50">
                     <div className="flex items-center gap-2 font-bold">
-                        <Sparkles className="text-orange-400" size={20} />
-                        <span className="text-gray-800">Nano Banana Pro</span>
+                        <img src="/logo.png" className="w-6 h-6 object-contain" onError={(e) => e.target.style.display = 'none'} />
+                        {/* Fallback to text only if no logo, but we show both or just text */}
+                        <span className="text-gray-800 font-bold">Universe 36.5°</span>
                         <ArrowRight size={16} className="text-stone-400" />
                         <span className="text-orange-600 font-serif">Veo 3 Studio</span>
                     </div>

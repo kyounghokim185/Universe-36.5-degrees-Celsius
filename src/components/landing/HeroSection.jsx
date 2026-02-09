@@ -38,6 +38,16 @@ export default function HeroSection({ onStart, lang }) {
                 <div className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] bg-amber-200/20 rounded-full blur-[100px] animate-blob animation-delay-4000"></div>
             </div>
 
+            {/* Logo Section */}
+            <div className="absolute top-6 left-6 z-50 flex items-center gap-3">
+                {/* Placeholder for the logo user will save */}
+                <img src="/logo.png" alt="Universe 36.5°" className="w-10 h-10 object-contain" onError={(e) => e.target.style.display = 'none'} />
+                <div className="flex flex-col">
+                    <span className="font-bold text-xl tracking-tight text-gray-900 leading-none">Universe 36.5°</span>
+                    <span className="text-[10px] text-orange-600 font-medium tracking-wider uppercase">The Warmest Galaxy</span>
+                </div>
+            </div>
+
             <div className="z-10 w-full max-w-6xl flex flex-col md:flex-row items-center justify-between gap-12 md:gap-20">
 
                 {/* Text Content */}
