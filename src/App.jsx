@@ -3,6 +3,7 @@ import { RotateCw } from 'lucide-react';
 import AITestPage from './components/AITestPage';
 import EmotionalLanding from './components/EmotionalLanding';
 import VeoStudio from './components/studio/VeoStudio';
+import AdminDashboard from './components/AdminDashboard';
 
 export default function App() {
   const [step, setStep] = useState('landing');
@@ -91,6 +92,7 @@ export default function App() {
             }}
             onTest={handleTest}
             onBetaSubmit={handleBetaSubmit}
+            onAdmin={() => setStep('admin')}
             lang={lang}
           />
         )}
@@ -105,6 +107,7 @@ export default function App() {
           />
         )}
         {step === 'test' && <AITestPage onBack={() => setStep('landing')} />}
+        {step === 'admin' && <AdminDashboard onBack={() => setStep('landing')} />}
       </div>
     </div>
   );

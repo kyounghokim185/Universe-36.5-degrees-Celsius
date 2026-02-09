@@ -5,7 +5,7 @@ import MechanismSection from './landing/MechanismSection';
 import PortfolioSection from './landing/PortfolioSection';
 import BetaForm from './landing/BetaForm';
 
-export default function EmotionalLanding({ onStart, onTest, onBetaSubmit, lang }) {
+export default function EmotionalLanding({ onStart, onTest, onBetaSubmit, onAdmin, lang }) {
     // Simple scroll progress indicator could be added here if needed
 
     useEffect(() => {
@@ -27,9 +27,14 @@ export default function EmotionalLanding({ onStart, onTest, onBetaSubmit, lang }
             {/* Footer / Dev Link */}
             <div className="bg-gray-900 py-6 text-center border-t border-gray-800">
                 <p className="text-gray-500 text-xs mb-2">© 2024 Memory AI. All rights reserved.</p>
-                <button onClick={onTest} className="text-xs text-gray-600 hover:text-gray-400 underline">
-                    Developer: AI Backend Test
-                </button>
+                <div className="flex justify-center gap-4">
+                    <button onClick={onTest} className="text-xs text-gray-600 hover:text-gray-400 underline">
+                        Developer: AI Backend Test
+                    </button>
+                    <button onClick={onAdmin} className="text-xs text-gray-600 hover:text-gray-400 underline">
+                        Admin Dashboard
+                    </button>
+                </div>
             </div>
         </div>
     );

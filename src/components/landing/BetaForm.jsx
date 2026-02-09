@@ -82,6 +82,20 @@ export default function BetaForm({ onStart, lang = 'ko' }) {
             alert(lang === 'ko' ? '개인정보 수집 동의가 필요합니다.' : 'Privacy policy agreement required.');
             return;
         }
+
+        // Save to LocalStorage for Admin Dashboard
+        try {
+            const existing = JSON.parse(localStorage.getItem('beta_applications') || '[]');
+            const newEntry = {
+                ...formData,
+                id: Date.now(),
+                date: new Date().toISOString()
+            };
+            localStorage.setItem('beta_applications', JSON.stringify([newEntry, ...existing]));
+        } catch (err) {
+            console.error("Failed to save application locally", err);
+        }
+
         onStart(formData);
     };
 

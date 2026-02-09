@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useSpring, useMotionValue, useTransform } from 'framer-motion';
-import { Smartphone, MousePointer2, Maximize, Minimize } from 'lucide-react';
+import { Smartphone, MousePointer2, Maximize, Minimize, Plus, Minus } from 'lucide-react';
 
 const Gyro3DViewer = ({ imageUrl, videoUrl, backgroundImageUrl, alt = "Panoramic View" }) => {
     const [permissionGranted, setPermissionGranted] = useState(false);
