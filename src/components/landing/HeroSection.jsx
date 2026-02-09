@@ -1,0 +1,102 @@
+import React, { useRef, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowDown, Play } from 'lucide-react';
+import Gyro3DViewer from '../Gyro3DViewer';
+
+export default function HeroSection({ onStart }) {
+    const { scrollY } = useScroll();
+    const y1 = useTransform(scrollY, [0, 500], [0, 200]);
+    const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+    return (
+        <section className="min-h-screen flex flex-col items-center justify-center px-4 py-20 bg-cream relative overflow-hidden font-sans">
+            {/* Background Ambience */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] bg-orange-200/20 rounded-full blur-[120px] animate-blob"></div>
+                <div className="absolute top-[40%] -right-[20%] w-[60%] h-[60%] bg-amber-200/20 rounded-full blur-[100px] animate-blob animation-delay-4000"></div>
+            </div>
+
+            <div className="z-10 w-full max-w-6xl flex flex-col md:flex-row items-center justify-between gap-12 md:gap-20">
+
+                {/* Text Content */}
+                <motion.div
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="flex-1 text-center md:text-left space-y-6"
+                >
+                    <span className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-700 font-bold text-sm tracking-wide mb-2 shadow-sm border border-orange-200">
+                        AI Birthday Experience
+                    </span>
+                    <h1 className="text-4xl md:text-6xl font-serif font-bold text-gray-900 leading-tight">
+                        만약, 그날의 사진 속<br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600">주인공과 눈을 맞춘다면?</span>
+                    </h1>
+                    <p className="text-lg md:text-xl text-gray-600 font-medium leading-relaxed max-w-xl mx-auto md:mx-0">
+                        당신의 스마트폰을 기울여보세요.<br />
+                        멈춰있는 추억에 숨결을 불어넣고, 다시 만나보세요.
+                    </p>
+
+                    <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                        <button
+                            onClick={onStart}
+                            className="px-8 py-4 bg-gray-900 text-white rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-xl hover:shadow-2xl flex items-center justify-center gap-2"
+                        >
+                            <Play size={20} fill="currentColor" />
+                            지금 무료로 체험하기
+                        </button>
+                        <button className="px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-full font-bold text-lg hover:bg-gray-50 transition-colors shadow-md flex items-center justify-center gap-2">
+                            더 알아보기
+                        </button>
+                    </div>
+                </motion.div>
+
+                {/* Interactive 3D Viewer */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9, rotate: -5 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                    transition={{ duration: 0.8, delay: 0.2 }}
+                    className="flex-1 w-full max-w-md md:max-w-lg aspect-[3/4] relative perspective-1000"
+                >
+                    {/* Photo Frame Effect */}
+                    <div className="absolute inset-0 bg-white p-3 pb-16 shadow-2xl rounded-sm transform rotate-1 border border-gray-100">
+                        <div className="w-full h-full bg-gray-100 overflow-hidden relative">
+                            {/* GYRO VIEWER INTEGRATION */}
+                            <Gyro3DViewer
+                                imageUrl="https://picsum.photos/800/1000?grayscale" // Default Black & White
+                                videoUrl="https://cdn.pixabay.com/video/2024/02/05/199397-909923831_large.mp4" // Color/Video on activate?
+                            // Actually user requested: "Hover effect: photo transitions from black & white to color and shows a 'Play' icon on hover."
+                            // And "3D tilt"
+                            // My Gyro3DViewer handles tilt. 
+                            // Let's use it. Ideally we pass a high-res image.
+                            />
+
+                            {/* Overlay Texture (Old Photo) */}
+                            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/dust.png')] opacity-30 pointer-events-none mix-blend-overlay"></div>
+                        </div>
+
+                        <div className="absolute bottom-4 left-0 right-0 text-center font-handwriting text-gray-500 font-serif italic text-lg">
+                            Our precious memory, 2024
+                        </div>
+                    </div>
+
+                    {/* Decorative Elements */}
+                    <motion.div
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                        className="absolute -top-6 -right-6 w-20 h-20 bg-orange-400 rounded-full blur-xl opacity-40 z-[-1]"
+                    />
+                </motion.div>
+            </div>
+
+            {/* Scroll Indicator */}
+            <motion.div
+                style={{ opacity, y: y1 }}
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 text-gray-400 flex flex-col items-center gap-2"
+            >
+                <span className="text-xs uppercase tracking-widest">Scroll Down</span>
+                <ArrowDown className="animate-bounce" size={20} />
+            </motion.div>
+        </section>
+    );
+}

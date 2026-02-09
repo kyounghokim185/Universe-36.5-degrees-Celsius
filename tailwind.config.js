@@ -6,6 +6,13 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        cream: '#F9F7F2',
+      },
+      fontFamily: {
+        serif: ['"Noto Serif KR"', 'serif'],
+        sans: ['"Pretendard"', '"Noto Sans KR"', 'sans-serif'],
+      },
       animation: {
         blob: 'blob 7s infinite',
       },

@@ -9,18 +9,19 @@ class AIService:
         if not os.getenv("REPLICATE_API_TOKEN"):
             print("Warning: REPLICATE_API_TOKEN is not set.")
 
-    def generate_image(self, prompt: str, model: str = "black-forest-labs/flux-1.1-pro") -> str:
+    def generate_image(self, prompt: str, model: str = "black-forest-labs/flux-1.1-pro", aspect_ratio: str = "16:9") -> str:
         """
         Generates an image using the specified Replicate model.
         Returns the URL of the generated image.
+        Supports aspect_ratio: "16:9", "21:9", etc.
         """
-        print(f"Generating image with prompt: {prompt}, model: {model}")
+        print(f"Generating image with prompt: {prompt}, model: {model}, ar: {aspect_ratio}")
         try:
             output = replicate.run(
                 model,
                 input={
                     "prompt": prompt,
-                    "aspect_ratio": "16:9",
+                    "aspect_ratio": aspect_ratio,
                     "output_format": "webp",
                     "output_quality": 80,
                     "safety_tolerance": 2

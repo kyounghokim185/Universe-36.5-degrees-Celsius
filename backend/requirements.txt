@@ -4,3 +4,4 @@ replicate
 python-dotenv
 ffmpeg-python
 requests
+google-generativeai
