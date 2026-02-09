@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sparkles, ArrowRight, Loader2, CheckCircle, Smartphone } from 'lucide-react';
-import TimeCapsuleViewer from '../TimeCapsuleViewer';
+import Gyro3DViewer from '../Gyro3DViewer';
 
 // API Helpers
 const generateVeoPrompt = async (userData, countryData, languageData, partyOptions) => {
@@ -289,11 +289,18 @@ export default function VeoStudio({ userData, countryData, languageData, partyOp
                         {/* READY State */}
                         {status === 'ready' && (
                             <div className="relative w-full h-full max-h-[600px] rounded-2xl overflow-hidden shadow-2xl bg-black">
-                                <TimeCapsuleViewer
-                                    videoUrl={generatedImages.length > 0 ? "https://cdn.pixabay.com/video/2024/02/05/199397-909923831_large.mp4" : "https://cdn.pixabay.com/video/2024/02/05/199397-909923831_large.mp4"}
+                                {/* Use Gyro3DViewer with the selected image instead of video */}
+                                <Gyro3DViewer
+                                    // Use selected image. If index is null (fallback), use first.
+                                    imageUrl={generatedImages[selectedImageIndex] || generatedImages[0]}
+                                    // We don't have separate layers for this generated content yet, 
+                                    // so we pass the same image or just one.
+                                    // To make it look "deep", we can pass it as background.
+                                    backgroundImageUrl={generatedImages[selectedImageIndex] || generatedImages[0]}
+                                // No foreground for now unless we have segmentation.
                                 />
-                                <div className="absolute top-6 left-6 z-10">
-                                    <span className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                <div className="absolute top-6 left-6 z-10 pointer-events-none">
+                                    <span className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg">
                                         Interactive 360° Memory
                                     </span>
                                 </div>
